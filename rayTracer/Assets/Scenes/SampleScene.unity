@@ -504,7 +504,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RayTracingShader: {fileID: 7200000, guid: 18d7f4c0bbeddf14ca3efd9ec9717b62, type: 3}
-  SkyboxTexture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
+  SkyboxTexture: {fileID: 2800000, guid: d9d5c81d713c85041babdbe0881d19ef, type: 3}
   DirectionalLight: {fileID: 705507994}
   SeedCountText: {fileID: 1291327121}
   SampleCountText: {fileID: 337109853}
