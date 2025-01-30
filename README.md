@@ -6,3 +6,4 @@
 <br>
 <p>Current Progress:</p>
 <img src="rayTracer/Images/Seed_66 - sampleCount_8192.png" alt="Current Progress" />
+<img src="rayTracer/Images/Seed_66 - Dark - sampleCount_8192.png" alt="Current Progress" />
