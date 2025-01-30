@@ -15,8 +15,8 @@ static const float PI = 3.14159265f;
 float2 _PixelOffset;
 
 //----------------------------------------------------------------------
-// Utils
 
+// Utils
 float sdot(float3 x, float3 y, float f = 1.0f)
 {
     return saturate(dot(x, y) * f);
@@ -27,12 +27,11 @@ float energy(float3 color)
     return dot(color, 1.0f / 3.0f);
 }
 
-//----------------------------------------------------------------------
 // Randomness
-
 float2 _Pixel;
 float _Seed;
 
+// https://web.archive.org/web/20231019203829/https://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
 float rand()
 {
     float result = frac(sin(_Seed / 100.0f * dot(_Pixel, float2(12.9898f, 78.233f))) * 43758.5453f);
@@ -40,9 +39,7 @@ float rand()
     return result;
 }
 
-//----------------------------------------------------------------------
 // Sphere Struct
-
 struct Sphere
 {
     float3 position;
@@ -55,9 +52,7 @@ struct Sphere
 
 StructuredBuffer<Sphere> _Spheres;
 
-//----------------------------------------------------------------------
 // Ray
-
 struct Ray
 {
     float3 origin;
@@ -89,9 +84,7 @@ Ray CreateCameraRay(float2 uv)
     return CreateRay(origin, direction);
 }
 
-//----------------------------------------------------------------------
 // RayHit
-
 struct RayHit
 {
     float3 position;
@@ -116,15 +109,14 @@ RayHit CreateRayHit()
     return hit;
 }
 
-//----------------------------------------------------------------------
 // Intersection
-
 void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
 {
-    // Calculate distance along the ray where the ground plane is intersected
+    // Calculate distance along ray where ground plane is intersected
     float t = -ray.origin.y / ray.direction.y;
     if (t > 0 && t < bestHit.distance)
     {
+        // Set material
         bestHit.distance = t;
         bestHit.position = ray.origin + t * ray.direction;
         bestHit.normal = float3(0.0f, 1.0f, 0.0f);
@@ -137,7 +129,7 @@ void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
 
 void IntersectSphere(Ray ray, inout RayHit bestHit, Sphere sphere)
 {
-    // Calculate distance along the ray where the sphere is intersected
+    // Calculate distance along ray where sphere is intersected
     float3 d = ray.origin - sphere.position;
     float p1 = -dot(ray.direction, d);
     float p2sqr = p1 * p1 - dot(d, d) + sphere.radius * sphere.radius;
@@ -147,6 +139,7 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, Sphere sphere)
     float t = p1 - p2 > 0 ? p1 - p2 : p1 + p2;
     if (t > 0 && t < bestHit.distance)
     {
+        // Set material
         bestHit.distance = t;
         bestHit.position = ray.origin + t * ray.direction;
         bestHit.normal = normalize(bestHit.position - sphere.position);
@@ -157,9 +150,7 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, Sphere sphere)
     }
 }
 
-//----------------------------------------------------------------------
 // Trace
-
 RayHit Trace(Ray ray)
 {
     RayHit bestHit = CreateRayHit();
@@ -175,9 +166,7 @@ RayHit Trace(Ray ray)
     return bestHit;
 }
 
-//----------------------------------------------------------------------
 // Sampling
-
 float3x3 GetTangentSpace(float3 normal)
 {
     // Choose a helper vector for the cross product
@@ -203,9 +192,7 @@ float3 SampleHemisphere(float3 normal, float alpha)
     return mul(tangentSpaceDir, GetTangentSpace(normal));
 }
 
-//----------------------------------------------------------------------
 // Shade
-
 float SmoothnessToPhongAlpha(float s)
 {
     return pow(1000.0f, s * s);
@@ -220,7 +207,7 @@ float3 Shade(inout Ray ray, RayHit hit)
         float specChance = energy(hit.specular);
         float diffChance = energy(hit.albedo);
 
-        // Roulette-select the ray's path
+        // Random ray path
         float roulette = rand();
         if (roulette < specChance)
         {
@@ -248,19 +235,17 @@ float3 Shade(inout Ray ray, RayHit hit)
     }
     else
     {
-        // Erase the ray's energy - the sky doesn't reflect anything
+        // Erase ray's energy, sky doesn't reflect anything
         ray.energy = 0.0f;
 
-        // Sample the skybox and write it
+        // Sample skybox and write it
         float theta = acos(ray.direction.y) / -PI;
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
         return _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
     }
 }
 
-//----------------------------------------------------------------------
 // Kernel
-
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -275,12 +260,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     Ray ray = CreateCameraRay(uv);
     
-    // Sample the skybox and write it
+    // Sample skybox and write it - Doesn't really do anything anymore
     float theta = acos(ray.direction.y) / -PI;
     float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
     Result[id.xy] = _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0);
     
-    // Trace and shade
+    // Trace and shade - Use updated one
     /*RayHit hit = Trace(ray);
     float3 result = Shade(ray, hit);
     Result[id.xy] = float4(result, 1);*/

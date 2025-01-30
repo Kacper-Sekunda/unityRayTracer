@@ -77,7 +77,7 @@ public class RayTracingMaster : MonoBehaviour
             // Screenshot 0-0
             ScreenCapture.CaptureScreenshot( "Images/Seed_" + SphereSeed + " - sampleCount_" + _currentSample + ".png");
             
-            // Reenable
+            // Re-enables text
             StartCoroutine(RestoreText());
         }
         
@@ -128,7 +128,6 @@ public class RayTracingMaster : MonoBehaviour
             }
         }
         
-        // Seed -----------------------------------------------------------
         // Updates seed
         if (_lastSeed != SphereSeed)
         {
@@ -142,20 +141,19 @@ public class RayTracingMaster : MonoBehaviour
         {
             SeedCountText.text = "Seed = " + SphereSeed.ToString();
         }
-        // ----------------------------------------------------------------
     }
 
     private IEnumerator RestoreText()
     {
-        yield return new WaitForSeconds(0.05f);
-        SeedCountText.enabled = true;
+        yield return new WaitForSeconds(0.05f); // Wait
+        SeedCountText.enabled = true;           // Re-enables text
         SampleCountText.enabled = true;
     }
     
     private void OnEnable()
     {
-        _currentSample = 0;
-        SetUpScene();
+        _currentSample = 0; // Resets samples
+        SetUpScene();       // Sets up scene
     }
     
     private void OnDisable()
@@ -166,21 +164,20 @@ public class RayTracingMaster : MonoBehaviour
 
     private void SetUpScene()
     {
-        Random.InitState(SphereSeed);  // Reinitialize the random state based on the new seed
+        Random.InitState(SphereSeed);
         List<Sphere> spheres = new List<Sphere>();
 
-        // Add a number of random spheres
+        // Add number of random spheres
         for (int i = 0; i < SpheresMax; i++)
         {
             Sphere sphere = new Sphere();
-            // Randomly choose radius
-            sphere.radius = SphereRadius.x + Random.value * (SphereRadius.y - SphereRadius.x);
-
-            // Randomly place spheres within a defined radius
+            sphere.radius = SphereRadius.x + Random.value * (SphereRadius.y - SphereRadius.x);  // Randomly choose radius
+            
+            // Place spheres randomly within defined radius
             Vector2 randomPos = Random.insideUnitCircle * SpherePlacementRadius;
             sphere.position = new Vector3(randomPos.x, sphere.radius, randomPos.y);
 
-            // Reject spheres that are intersecting others
+            // Block spheres that collide
             foreach (Sphere other in spheres)
             {
                 float minDist = sphere.radius + other.radius;
@@ -188,11 +185,12 @@ public class RayTracingMaster : MonoBehaviour
                     goto SkipSphere;
             }
 
-            // Albedo and specular color
+            // Random material
             Color color = Random.ColorHSV();
             float chance = Random.value;
             if (chance < 0.9f)
             {
+                // Albedo, Specular and Roughness
                 bool metal = chance < 0.4f;
                 sphere.albedo = metal ? Vector4.zero : new Vector4(color.r, color.g, color.b);
                 sphere.specular = metal ? new Vector4(color.r, color.g, color.b) : new Vector4(0.04f, 0.04f, 0.04f);
@@ -200,10 +198,11 @@ public class RayTracingMaster : MonoBehaviour
             }
             else
             {
+                // Emission
                 Color emission = Random.ColorHSV(0, 1, 0, 1, 3.0f, 8.0f);
                 sphere.emission = new Vector3(emission.r, emission.g, emission.b);
             }
-            // Add the sphere to the list
+            // Add sphere to list
             spheres.Add(sphere);
 
             SkipSphere:
@@ -231,6 +230,7 @@ public class RayTracingMaster : MonoBehaviour
         //Vector3 l = DirectionalLight.transform.forward;
         //RayTracingShader.SetVector("_DirectionalLight", new Vector4(l.x, l.y, l.z, DirectionalLight.intensity));
 
+        // Set buffer
         if (_sphereBuffer != null)
             RayTracingShader.SetBuffer(0, "_Spheres", _sphereBuffer);
     }
@@ -278,6 +278,8 @@ public class RayTracingMaster : MonoBehaviour
         _addMaterial.SetFloat("_Sample", _currentSample);
         Graphics.Blit(_target, _converged, _addMaterial);
         Graphics.Blit(_converged, destination);
+        
+        // Check Sample count and update text
         if (_currentSample < maxSampleCount)
         {
             _currentSample++;
