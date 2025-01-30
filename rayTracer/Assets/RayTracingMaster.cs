@@ -279,27 +279,22 @@ public class RayTracingMaster : MonoBehaviour
         Graphics.Blit(_target, _converged, _addMaterial);
         Graphics.Blit(_converged, destination);
         
-        // Check Sample count and update text
-        if (_currentSample < maxSampleCount)
-        {
-            _currentSample++;
-            if (SampleCountText != null)
-            {
-                SampleCountText.text = "Samples = " + _currentSample.ToString();
-            }
-        }
-        else
-        {
-            if (SampleCountText != null)
-            {
-                 SampleCountText.text = "Samples = 8192";
-            }
+        // Update text
+        _currentSample++;
+        if (SampleCountText != null) 
+        { 
+            SampleCountText.text = "Samples = " + _currentSample.ToString();
         }
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        SetShaderParameters();
-        Render(destination);
+        if (_currentSample < maxSampleCount)
+        {
+            SetShaderParameters();
+            Render(destination);
+        }
+        
+        Graphics.Blit(_converged, destination);
     }
 }

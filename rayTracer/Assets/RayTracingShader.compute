@@ -260,10 +260,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     Ray ray = CreateCameraRay(uv);
     
-    // Sample skybox and write it - Doesn't really do anything anymore
-    float theta = acos(ray.direction.y) / -PI;
-    float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
-    Result[id.xy] = _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0);
+    // Sample skybox and write it
+    //float theta = acos(ray.direction.y) / -PI;
+    //float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    //Result[id.xy] = _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0);
     
     // Trace and shade - Use updated one
     /*RayHit hit = Trace(ray);
